@@ -1,0 +1,41 @@
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse
+from utils.parse import parse_pdf
+from utils.ocr import ocr_image
+import tempfile
+import shutil
+import os
+
+upload_router = APIRouter()
+
+ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg"]
+ALLOWED_PDF_TYPE = "application/pdf"
+
+
+@upload_router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    if file.content_type not in ALLOWED_IMAGE_TYPES + [ALLOWED_PDF_TYPE]:
+        raise HTTPException(status_code=400, detail="Unsupported file type. Only PDFs and images are allowed.")
+
+    try:
+        # Save to temporary file
+        suffix = os.path.splitext(file.filename)[-1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = tmp.name
+
+        # Use OCR for images, Parse for PDFs
+        if file.content_type in ALLOWED_IMAGE_TYPES:
+            result = ocr_image(tmp_path)
+        elif file.content_type == ALLOWED_PDF_TYPE:
+            result = parse_pdf(tmp_path)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+
+        return JSONResponse(content={"result": result})
+    
+    finally:
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
