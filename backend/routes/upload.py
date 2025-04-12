@@ -2,6 +2,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from utils.parse import parse_pdf
 from utils.ocr import ocr_image
+from utils.chunk import chunk_text
+from utils.embedding import embed_and_store_chunks
 import tempfile
 import shutil
 import os
@@ -12,7 +14,7 @@ ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg"]
 ALLOWED_PDF_TYPE = "application/pdf"
 
 
-@upload_router.post("/upload")
+@upload_router.post("/upload", tags=["Upload"])
 async def upload_file(file: UploadFile = File(...)):
     if file.content_type not in ALLOWED_IMAGE_TYPES + [ALLOWED_PDF_TYPE]:
         raise HTTPException(status_code=400, detail="Unsupported file type. Only PDFs and images are allowed.")
@@ -26,13 +28,19 @@ async def upload_file(file: UploadFile = File(...)):
 
         # Use OCR for images, Parse for PDFs
         if file.content_type in ALLOWED_IMAGE_TYPES:
-            result = ocr_image(tmp_path)
+            extracted_text = ocr_image(tmp_path)
         elif file.content_type == ALLOWED_PDF_TYPE:
-            result = parse_pdf(tmp_path)
+            extracted_text = parse_pdf(tmp_path)
         else:
             raise HTTPException(status_code=400, detail="Unsupported file type")
 
-        return JSONResponse(content={"result": result})
+        # Chunking
+        chunks = chunk_text(extracted_text, file.filename)
+
+        # Embedding & storing
+        embed_and_store_chunks(chunks)
+
+        return JSONResponse(content={"message": "File processed, chunked, embedded and stored successfully!"})
     
     finally:
         try:
