@@ -1,309 +1,359 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useRef, useEffect } from "react"
+import { FileUp, Send, FileText, ImageIcon, Bot, User, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Send, Bot, User, Upload, File, X } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Textarea } from "@/components/ui/textarea"
+import { FileUploader } from "@/components/file-uploader"
+import { motion, AnimatePresence } from "framer-motion"
 
-export function ChatInterface({ fileUploaded, onFileUpload }) {
-  const [messages, setMessages] = useState([])
-  const [inputValue, setInputValue] = useState("")
-  const [uploadedFiles, setUploadedFiles] = useState([])
-  const [isDragging, setIsDragging] = useState(false)
-  const messagesEndRef = useRef(null)
-  const fileInputRef = useRef(null)
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+  attachments?: {
+    type: "pdf" | "image"
+    name: string
+    size: string
+  }[]
+  suggestion?: {
+    text: string
+    action: string
+  }
+}
 
+interface ChatInterfaceProps {
+  onDocumentProcessed: (documentType: string) => void
+  documentType: string | null
+  onToggleActionSidebar: () => void
+  showActionSidebar: boolean
+}
+
+export function ChatInterface({
+  onDocumentProcessed,
+  documentType,
+  onToggleActionSidebar,
+  showActionSidebar,
+}: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content:
+        "Hello! I'm your document assistant. Upload a document, and I'll help you analyze it and suggest actions.",
+      timestamp: new Date(),
+    },
+  ])
+  const [input, setInput] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+  const [showUploader, setShowUploader] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to bottom when messages change
   useEffect(() => {
-    if (fileUploaded && messages.length === 0) {
-      // Add initial messages for demo mode
-      setMessages([
-        {
-          role: "assistant",
-          content: "Welcome to the Echo demo! I've analyzed the AlphaTech Service Agreement for you.",
-          suggestions: ["Summarize the key points", "What are the payment terms?", "Check for policy compliance"],
-        },
-        {
-          role: "assistant",
-          content:
-            "This is a 12-month service agreement with AlphaTech, dated March 2024. It includes standard terms for SaaS services with a total value of $24,000.",
-          suggestions: ["Show me the key dates", "Any unusual clauses?", "Compare to our template"],
-        },
-      ])
-
-      // Add demo file
-      if (uploadedFiles.length === 0) {
-        const demoFile = {
-          name: "AlphaTech_Contract_2024.pdf",
-          size: 1024 * 256, // 256 KB
-          type: "application/pdf",
-        }
-        setUploadedFiles([demoFile])
-      }
-    }
-  }, [fileUploaded, messages.length, uploadedFiles.length])
-
-  useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  const handleSendMessage = (e) => {
-    e.preventDefault()
-
-    if (!inputValue.trim()) return
+  const handleSendMessage = () => {
+    if (!input.trim()) return
 
     // Add user message
-    setMessages([...messages, { role: "user", content: inputValue }])
-
-    // Simulate Echo response
-    setTimeout(() => {
-      const responses = [
-        {
-          content:
-            "This contract includes a 30-day termination clause in section 8.2. Would you like me to check if this aligns with your company policy?",
-          suggestions: ["Yes, check policy compliance", "What other termination conditions exist?"],
-        },
-        {
-          content:
-            "I've identified that this agreement has a 12-month auto-renewal term. Would you like me to set a calendar reminder for 60 days before renewal?",
-          suggestions: ["Set calendar reminder", "What are the renewal terms?"],
-        },
-        {
-          content:
-            "The payment terms require net-45 payment schedule, which is longer than your standard net-30 terms. Would you like me to flag this for review?",
-          suggestions: ["Flag for review", "Compare to previous contract"],
-        },
-      ]
-
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: randomResponse.content,
-          suggestions: randomResponse.suggestions,
-        },
-      ])
-    }, 1000)
-
-    setInputValue("")
-  }
-
-  const handleSuggestionClick = (suggestion) => {
-    setMessages([...messages, { role: "user", content: suggestion }])
-
-    // Simulate Echo response
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `I'm processing your request to "${suggestion}". This will take just a moment...`,
-          suggestions: ["Show me more details", "What else should I know?"],
-        },
-      ])
-    }, 800)
-  }
-
-  const handleFileUpload = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).map((file) => ({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      }))
-
-      setUploadedFiles((prev) => [...prev, ...newFiles])
-      onFileUpload(newFiles)
-
-      // Add a message about the uploaded file
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "user",
-          content: `I've uploaded ${newFiles.map((f) => f.name).join(", ")}`,
-        },
-      ])
-
-      // Simulate Echo response
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: `I've received your document${newFiles.length > 1 ? "s" : ""}. Let me analyze ${newFiles.length > 1 ? "them" : "it"} for you...`,
-          },
-        ])
-
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: `I've analyzed ${newFiles.length > 1 ? "your documents" : "your document"}. This appears to be a service agreement with standard terms. What would you like to know about it?`,
-              suggestions: ["Summarize key points", "Check for risks", "Compare to our template"],
-            },
-          ])
-        }, 1500)
-      }, 1000)
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+      timestamp: new Date(),
     }
+
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+
+    // Simulate AI response
+    setTimeout(() => {
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I'm analyzing your request. Is there a specific document you'd like me to help with?",
+        timestamp: new Date(),
+      }
+
+      setMessages((prev) => [...prev, assistantMessage])
+    }, 1000)
   }
 
-  const removeFile = (index) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
+  const handleFileUpload = (files: File[]) => {
+    setIsUploading(true)
+    setShowUploader(false)
+
+    // Simulate file upload and processing
+    setTimeout(() => {
+      const file = files[0]
+      const fileSize = (file.size / 1024).toFixed(0) + " KB"
+      const fileType = file.name.endsWith(".pdf") ? "pdf" : "image"
+
+      // Add user message with attachment
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: "I've uploaded a document for analysis.",
+        timestamp: new Date(),
+        attachments: [
+          {
+            type: fileType as "pdf" | "image",
+            name: file.name,
+            size: fileSize,
+          },
+        ],
+      }
+
+      setMessages((prev) => [...prev, userMessage])
+      setIsUploading(false)
+
+      // Simulate AI processing and response
+      setTimeout(() => {
+        // Determine document type based on filename (in a real app, this would be done by AI)
+        let docType = "unknown"
+        let suggestion = ""
+
+        if (file.name.toLowerCase().includes("meeting") || file.name.toLowerCase().includes("notes")) {
+          docType = "meeting_notes"
+          suggestion = "Would you like me to extract action items from these meeting notes?"
+        } else if (file.name.toLowerCase().includes("financial") || file.name.toLowerCase().includes("report")) {
+          docType = "financial"
+          suggestion = "Would you like me to visualize the key financial data in this report?"
+        } else if (file.name.toLowerCase().includes("project") || file.name.toLowerCase().includes("roadmap")) {
+          docType = "planning"
+          suggestion = "Would you like me to create a timeline from this project document?"
+        } else {
+          docType = "document"
+          suggestion = "Would you like me to summarize this document?"
+        }
+
+        // Update parent component with document type
+        onDocumentProcessed(docType)
+
+        // Generate appropriate response based on document type
+        let responseContent = ""
+        if (docType === "meeting_notes") {
+          responseContent =
+            "I've analyzed your meeting notes. I can see this is from a product team discussion with several action items and decisions about the Q3 roadmap."
+        } else if (docType === "financial") {
+          responseContent =
+            "I've analyzed your financial report. This appears to be a quarterly financial summary with revenue figures, expenses, and projections for the next quarter."
+        } else if (docType === "planning") {
+          responseContent =
+            "I've analyzed your project planning document. This contains project milestones, team assignments, and deadlines for the upcoming product launch."
+        } else {
+          responseContent = "I've analyzed your document and extracted the key information."
+        }
+
+        const assistantMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: responseContent,
+          timestamp: new Date(),
+          suggestion: {
+            text: suggestion,
+            action:
+              docType === "meeting_notes"
+                ? "extract_action_items"
+                : docType === "financial"
+                  ? "visualize_data"
+                  : docType === "planning"
+                    ? "create_timeline"
+                    : "summarize",
+          },
+        }
+
+        setMessages((prev) => [...prev, assistantMessage])
+      }, 1500)
+    }, 2000)
   }
 
-  const openFileDialog = () => {
-    fileInputRef.current?.click()
+  const handleSuggestionAction = (action: string) => {
+    // Add user message accepting the suggestion
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: "Yes, please do that.",
+      timestamp: new Date(),
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+
+    // Simulate AI processing the action
+    setTimeout(() => {
+      let responseContent = ""
+
+      switch (action) {
+        case "extract_action_items":
+          responseContent =
+            "I've extracted the following action items from your meeting notes:\n\n1. @John to finalize the Q3 product roadmap by Friday\n2. @Sarah to schedule user testing sessions for the new feature\n3. @Team to review the competitor analysis before next meeting\n4. @Michael to update the project timeline in Jira"
+          break
+        case "visualize_data":
+          responseContent =
+            "I've created visualizations based on your financial data. The charts show a 15% increase in revenue compared to last quarter, with marketing expenses decreasing by 8%. Would you like me to send these visualizations to your team?"
+          break
+        case "create_timeline":
+          responseContent =
+            "I've created a project timeline based on your planning document. The critical path shows the product launch is scheduled for October 15th, with beta testing beginning on September 1st. Would you like me to export this timeline to your project management tool?"
+          break
+        case "summarize":
+          responseContent =
+            "Here's a summary of your document:\n\nThe document outlines the company's strategic initiatives for the upcoming fiscal year, focusing on market expansion, product innovation, and operational efficiency. Key points include entering two new markets in Q2, launching three product enhancements in Q3, and implementing a new CRM system by year-end."
+          break
+        default:
+          responseContent =
+            "I've processed your request. Is there anything else you'd like me to do with this document?"
+      }
+
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: responseContent,
+        timestamp: new Date(),
+      }
+
+      setMessages((prev) => [...prev, assistantMessage])
+    }, 1500)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      onDragOver={(e) => {
-        e.preventDefault()
-        setIsDragging(true)
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={(e) => {
-        e.preventDefault()
-        setIsDragging(false)
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          const newFiles = Array.from(e.dataTransfer.files).map((file) => ({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-          }))
-          setUploadedFiles((prev) => [...prev, ...newFiles])
-          onFileUpload(newFiles)
-        }
-      }}
-    >
-      {isDragging && (
-        <div className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500 rounded-lg z-10 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <Upload className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-            <p className="text-lg font-medium">Drop your files here</p>
-          </div>
+    <div className="flex h-full flex-col bg-gradient-to-b from-background to-background/50">
+      <div className="border-b border-border/50 p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm">
+        <h2 className="text-xl font-semibold">DocAssist</h2>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="text-muted-foreground">
+            New Chat
+          </Button>
+          {/* Add a mobile-only button to toggle the action sidebar */}
+          <Button variant="outline" size="sm" className="md:hidden" onClick={onToggleActionSidebar}>
+            Actions
+          </Button>
         </div>
-      )}
+      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {!fileUploaded && messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="bg-gray-100 p-4 rounded-full mb-4">
-              <Bot className="h-8 w-8 text-gray-500" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Upload a document to get started</h3>
-            <p className="text-gray-500 max-w-md mb-6">
-              Echo will analyze your document and help you understand, compare, and act on it.
-            </p>
-            <Button onClick={openFileDialog} className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Upload Document
-            </Button>
-          </div>
-        ) : (
-          <>
-            {uploadedFiles.length > 0 && (
-              <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                <h4 className="text-sm font-medium mb-2">Uploaded Documents</h4>
-                <ul className="space-y-2">
-                  {uploadedFiles.map((file, index) => (
-                    <li key={index} className="flex items-center text-sm bg-white p-2 rounded border">
-                      <File className="h-4 w-4 mr-2 text-blue-600" />
-                      <span className="truncate flex-1">{file.name}</span>
-                      <span className="text-xs text-gray-500 mr-2">{(file.size / 1024).toFixed(0)} KB</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile(index)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
+      <div className="flex-1 overflow-auto p-4 md:p-6" ref={chatContainerRef}>
+        <div className="max-w-3xl mx-auto space-y-6">
+          <AnimatePresence initial={false}>
             {messages.map((message, index) => (
-              <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`flex max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <div
-                    className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                      message.role === "user" ? "bg-blue-100 ml-2" : "bg-gray-100 mr-2"
-                    }`}
-                  >
-                    {message.role === "user" ? (
-                      <User className="h-4 w-4 text-blue-600" />
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`flex max-w-[85%] gap-3 rounded-2xl p-4 ${
+                    message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                  }`}
+                >
+                  <div className="mt-1 shrink-0">
+                    {message.role === "assistant" ? (
+                      <div className="rounded-full bg-primary/10 p-1">
+                        <Bot className="h-5 w-5 text-primary" />
+                      </div>
                     ) : (
-                      <Bot className="h-4 w-4 text-gray-600" />
-                    )}
-                  </div>
-
-                  <div
-                    className={`p-3 rounded-lg ${
-                      message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    <p>{message.content}</p>
-
-                    {message.suggestions && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {message.suggestions.map((suggestion, i) => (
-                          <button
-                            key={i}
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            className={`text-xs px-3 py-1 rounded-full ${
-                              message.role === "user"
-                                ? "bg-blue-700 text-blue-100"
-                                : "bg-white text-gray-800 border border-gray-200"
-                            }`}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
+                      <div className="rounded-full bg-primary-foreground/20 p-1">
+                        <User className="h-5 w-5" />
                       </div>
                     )}
                   </div>
+                  <div className="space-y-3 overflow-hidden">
+                    {message.attachments?.map((attachment, index) => (
+                      <div key={index} className="flex items-center gap-2 rounded-md bg-background/20 p-2">
+                        {attachment.type === "pdf" ? (
+                          <FileText className="h-4 w-4" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="text-sm font-medium truncate">{attachment.name}</span>
+                          <span className="text-xs opacity-70">{attachment.size}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+
+                    {message.suggestion && (
+                      <div className="mt-4 pt-3 border-t border-border/20">
+                        <p className="text-sm font-medium mb-3">{message.suggestion.text}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            className="rounded-full px-4 shadow-sm"
+                            onClick={() => handleSuggestionAction(message.suggestion!.action)}
+                          >
+                            Yes
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full px-4"
+                            onClick={onToggleActionSidebar}
+                          >
+                            More actions <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="text-right text-xs opacity-70">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </>
-        )}
-        <div ref={messagesEndRef} />
+          </AnimatePresence>
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <div className="p-4 border-t">
-        <form onSubmit={handleSendMessage} className="flex space-x-2">
-          <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
+      {showUploader && (
+        <div className="border-t border-border/50 p-4 bg-background/80 backdrop-blur-sm">
+          <FileUploader onUpload={handleFileUpload} onCancel={() => setShowUploader(false)} isUploading={isUploading} />
+        </div>
+      )}
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button type="button" variant="outline" size="icon" onClick={openFileDialog}>
-                  <Upload className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Upload document</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask a question about your document..."
-            className="flex-1"
-          />
-
-          <Button type="submit" size="icon" disabled={!inputValue.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
+      <div className="border-t border-border/50 p-4 bg-background/80 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowUploader(!showUploader)}
+              className="shrink-0 rounded-full"
+            >
+              <FileUp className="h-4 w-4" />
+            </Button>
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              className="min-h-10 resize-none rounded-xl border-muted bg-background"
+            />
+            <Button onClick={handleSendMessage} disabled={!input.trim()} className="shrink-0 rounded-full">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
