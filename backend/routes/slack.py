@@ -1,54 +1,76 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import subprocess
+from openai import OpenAI
 import os
-import json
+from dotenv import load_dotenv
+import requests
 
-router = APIRouter()
+slack_router = APIRouter()
 
-class SlackMessage(BaseModel):
-    message: str
+load_dotenv()
 
-@router.options("/send")
-async def options_slack():
-    return {"message": "OK"}
+# Initialize OpenAI client (Upstage Solar)
+client = OpenAI(
+    api_key=os.getenv("UPSTAGE_API_KEY"),
+    base_url="https://api.upstage.ai/v1"
+)
 
-@router.post("/send")
-async def send_slack_message(slack_message: SlackMessage):
+# Slack webhook URL
+SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
+
+# Path to latest document
+LATEST_DOC_PATH = "data/latest_document.txt"
+
+@slack_router.post("/send-slack", tags=["Slack"])
+async def send_slack_summary():
     try:
-        # Получаем абсолютный путь к скрипту
-        script_path = os.path.join(os.path.dirname(__file__), "..", "workflows", "slack", "slack_send.py")
-        
-        # Запускаем скрипт с сообщением
-        result = subprocess.run(
-            ["python3", script_path, "-m", slack_message.message],
-            capture_output=True,
-            text=True
+        # Step 1: Read the latest document
+        if not os.path.exists(LATEST_DOC_PATH):
+            raise HTTPException(status_code=404, detail="Latest document not found.")
+
+        with open(LATEST_DOC_PATH, "r", encoding="utf-8") as f:
+            document_text = f.read()
+
+        if not document_text.strip():
+            raise HTTPException(status_code=400, detail="Latest document is empty.")
+
+        # Step 2: Ask the model for a summary
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Write an organized summary of the document in an organized and easy-to-follow way."
+            },
+            {
+                "role": "user",
+                "content": document_text
+            }
+        ]
+
+        response = client.chat.completions.create(
+            model="solar-pro",
+            messages=messages
         )
-        
-        # Логируем результат выполнения скрипта
-        print(f"Script output: {result.stdout}")
-        print(f"Script error: {result.stderr}")
-        
-        if result.returncode != 0:
-            error_message = result.stderr or "Unknown error occurred"
+
+        summary = response.choices[0].message.content.strip()
+
+        # Step 3: Send the summary to Slack
+        payload = {"text": f"*Summary of Latest Document:*\n{summary}"}
+        slack_response = requests.post(
+            SLACK_WEBHOOK_URL,
+            json=payload,
+            headers={"Content-Type": "application/json"}
+        )
+
+        if slack_response.status_code != 200:
             raise HTTPException(
                 status_code=500,
-                detail=f"Error executing slack_send.py: {error_message}"
+                detail=f"Failed to send message to Slack: {slack_response.text}"
             )
-            
-        try:
-            # Пытаемся распарсить вывод скрипта как JSON
-            response_data = json.loads(result.stdout)
-            return response_data
-        except json.JSONDecodeError:
-            # Если вывод не JSON, возвращаем его как есть
-            return {"status": "success", "message": result.stdout}
-        
+
+        return {
+            "status": "success",
+            "message": "Summary sent to Slack successfully.",
+            "summary": summary
+        }
+
     except Exception as e:
-        print(f"Error in send_slack_message: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to send Slack message: {str(e)}"
-        ) 
+        raise HTTPException(status_code=500, detail=str(e))

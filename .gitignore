@@ -35,3 +35,4 @@ next-env.d.ts
 *.jpeg
 backend/structure.txt
 /backend/vector_store
+backend/data/latest_document.txt

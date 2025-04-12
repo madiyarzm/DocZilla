@@ -43,11 +43,11 @@ async def chat_with_upstage(payload: ChatPayload):
         # Retrieve relevant document chunks
         similar_chunks = retrieve_similar_chunks(query_embedding)
 
-        # 🧠 Format system message
+        # Format system message
         system_message = SYSTEM_TEMPLATE.format(chunks="\n\n".join(f"- {chunk}" for chunk in similar_chunks))
         full_convo = [Message(role="system", content=system_message)] + messages
 
-        # 🧠 Call the model
+        # Call the model
         response = client.chat.completions.create(
             model="solar-pro",
             messages=[msg.dict() for msg in full_convo]
