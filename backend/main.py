@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.upload import upload_router
 from routes.query import query_router
-# from routes.actions import actions_router
+from routes.chat import chat_router
 
 app = FastAPI(title="Echo – Contract Assistant")
 
 # Register routers
 app.include_router(upload_router)
 app.include_router(query_router)
-# app.include_router(actions_router)
+app.include_router(chat_router)
 
 # Allowed frontend URLs
 origins = [
