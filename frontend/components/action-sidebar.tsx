@@ -154,7 +154,7 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
             title: "Set Calendar Event",
             description: "Add renewal/termination dates to Google Calendar",
             icon: <CalendarClock className="h-4 w-4" />,
-            isEnabled: getActionAvailability("generate_action_items"),
+            isEnabled: getActionAvailability("setting_calendar_event"),
             tooltipContent: "Automatically identify and extract action items, tasks, and to-dos from meeting notes or project documents.",
           },
       ],
