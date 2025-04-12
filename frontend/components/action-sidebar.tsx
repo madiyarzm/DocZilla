@@ -15,6 +15,8 @@ import {
   Play,
   Clock,
   FileText,
+  CalendarClock,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -94,49 +96,19 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
           tooltipContent: "Generate a comprehensive summary of the document's main points and insights.",
         },
         {
-          id: "generate_action_items",
-          title: "Extract Action Items",
-          description: "Identify tasks and to-dos from your document",
+          id: "checklist",
+          title: "Check Against Internal Policy",
+          description: "Generate a checklist and flag deviations from company standards",
           icon: <CheckSquare className="h-4 w-4" />,
-          isEnabled: getActionAvailability("generate_action_items"),
-          tooltipContent:
-            "Automatically identify and extract action items, tasks, and to-dos from meeting notes or project documents.",
+          isEnabled: getActionAvailability("checklist"),
+          tooltipContent: "Generate a comprehensive summary of the document's main points and insights.",
         },
-        {
-          id: "extract_tables",
-          title: "Extract Tables & Charts",
-          description: "Pull structured data from your document",
-          icon: <Table className="h-4 w-4" />,
-          isEnabled: getActionAvailability("extract_tables"),
-          tooltipContent:
-            "Identify and extract tables, charts, and structured data from your document for further analysis.",
-        },
+
+
       ],
     },
     {
-      title: "Visualization",
-      actions: [
-        {
-          id: "visualize_data",
-          title: "Visualize Key Data",
-          description: "Create charts from tables and numbers",
-          icon: <BarChart className="h-4 w-4" />,
-          isEnabled: getActionAvailability("visualize_data"),
-          tooltipContent:
-            "Extract numerical data from your document and generate visual charts and graphs for better insights.",
-        },
-        {
-          id: "create_timeline",
-          title: "Create Timeline",
-          description: "Generate a visual timeline from dates",
-          icon: <Clock className="h-4 w-4" />,
-          isEnabled: getActionAvailability("create_timeline"),
-          tooltipContent: "Extract dates and milestones to create a visual project timeline.",
-        },
-      ],
-    },
-    {
-      title: "Organization",
+      title: "Generation",
       actions: [
         {
           id: "classify_organize",
@@ -145,29 +117,46 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
           icon: <FolderSymlink className="h-4 w-4" />,
           isEnabled: getActionAvailability("classify_organize"),
           tooltipContent:
-            "Automatically classify your document and suggest where to store it in your file system or cloud storage.",
+            "Automatically classify your document and place it in Google Drive storage.",
         },
         {
-          id: "grant_access",
-          title: "Grant Access",
-          description: "Manage permissions for sensitive documents",
-          icon: <ShieldCheck className="h-4 w-4" />,
-          isEnabled: getActionAvailability("grant_access"),
-          tooltipContent: "Set up appropriate access controls and permissions for sensitive or confidential documents.",
-        },
+            id: "extract_tables",
+            title: "Extract Tables & Charts",
+            description: "Pull structured data from your document",
+            icon: <Table className="h-4 w-4" />,
+            isEnabled: getActionAvailability("extract_tables"),
+            tooltipContent:
+              "Identify and extract tables, charts, and structured data from your document for further analysis.",
+          },
       ],
     },
     {
-      title: "Sharing",
+      title: "Workflow",
       actions: [
         {
           id: "send_summary",
           title: "Send Summary",
-          description: "Share key points via email or Slack",
+          description: "Share key points via Slack to the team",
           icon: <Send className="h-4 w-4" />,
           isEnabled: getActionAvailability("send_summary"),
-          tooltipContent: "Create a concise summary of your document and send it to team members via email or Slack.",
+          tooltipContent: "Create a concise summary of your document and send it to team members Slack.",
         },
+        {
+            id: "generate_action_items",
+            title: "Extract Action Items",
+            description: "Identify tasks from your document, and turn findings into Notion to-do items",
+            icon: <ClipboardList className="h-4 w-4" />,
+            isEnabled: getActionAvailability("generate_action_items"),
+            tooltipContent: "Automatically identify and extract action items, tasks, and to-dos from meeting notes or project documents.",
+          },
+          {
+            id: "setting_calendar_event",
+            title: "Set Calendar Event",
+            description: "Add renewal/termination dates to Google Calendar",
+            icon: <CalendarClock className="h-4 w-4" />,
+            isEnabled: getActionAvailability("generate_action_items"),
+            tooltipContent: "Automatically identify and extract action items, tasks, and to-dos from meeting notes or project documents.",
+          },
       ],
     },
   ]
