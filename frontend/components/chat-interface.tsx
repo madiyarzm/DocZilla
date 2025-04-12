@@ -278,7 +278,7 @@ export function ChatInterface({
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-background to-background/50">
       <div className="border-b border-border/50 p-4 flex justify-between items-center bg-background/80 backdrop-blur-sm">
-        <h2 className="text-xl font-semibold">DocAssist</h2>
+        <h2 className="text-xl font-semibold">DocZilla</h2>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-muted-foreground">
             New Chat

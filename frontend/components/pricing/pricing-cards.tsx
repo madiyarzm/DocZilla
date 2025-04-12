@@ -37,7 +37,7 @@ const pricingPlans = [
       monthly: 99,
       yearly: 949,
     },
-    description: "Includes 5 users",
+    description: "Includes 20 users",
     features: ["500 documents", "Shared workspace", "Drive/Slack/Notion sync", "Document memory across users"],
     cta: "Start Team Plan",
     popular: false,

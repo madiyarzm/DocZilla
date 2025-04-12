@@ -35,7 +35,7 @@ export function AppSidebar() {
           <div className="rounded-md bg-primary p-1">
             <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-semibold group-data-[collapsible=icon]:hidden">DocAssist</span>
+          <span className="font-semibold group-data-[collapsible=icon]:hidden">DocZilla</span>
         </div>
         <SidebarTrigger />
       </SidebarHeader>

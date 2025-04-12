@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=0.9" />
-        <title>DocAssist - AI-Powered Document Intelligence</title>
+        <title>DocZilla - AGI-Powered Document Intelligence</title>
       </head>
       <body className={inter.className}>
         <ThemeProvider
