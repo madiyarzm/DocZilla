@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUploader } from "@/components/file-uploader"
 import { motion, AnimatePresence } from "framer-motion"
+import { sendChatMessage } from "@/services/chat"
 
 interface ChatMessage {
   id: string
-  role: "user" | "assistant"
+  role: "user" | "assistant" | "system"
   content: string
   timestamp: Date
   attachments?: {
@@ -52,37 +53,61 @@ export function ChatInterface({
   const [showUploader, setShowUploader] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const [isSending, setIsSending] = useState(false)
+  const isSendingRef = useRef(false)
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleSendMessage = () => {
-    if (!input.trim()) return
+  const handleSendMessage = async () => {
+    if (!input.trim() || isSendingRef.current) return
 
-    // Add user message
+    isSendingRef.current = true
+    setIsSending(true)
+    
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-user`,
       role: "user",
       content: input,
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
+    // Show user message immediately
+    setMessages(prev => [...prev, userMessage])
     setInput("")
 
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+    try {
+      // Send messages to backend and get response
+      const updatedMessages = await sendChatMessage([...messages, userMessage])
+      
+      // Filter out any duplicate messages based on content and role
+      const uniqueMessages = updatedMessages.reduce((acc: ChatMessage[], current) => {
+        const isDuplicate = acc.some(
+          msg => msg.content === current.content && msg.role === current.role
+        )
+        if (!isDuplicate) {
+          acc.push(current)
+        }
+        return acc
+      }, [])
+
+      setMessages(uniqueMessages)
+    } catch (error) {
+      console.error("Error sending message:", error)
+      // Add error message to chat
+      const errorMessage: ChatMessage = {
+        id: `${Date.now()}-error`,
         role: "assistant",
-        content: "I'm analyzing your request. Is there a specific document you'd like me to help with?",
+        content: "Sorry, I encountered an error while processing your message. Please try again.",
         timestamp: new Date(),
       }
-
-      setMessages((prev) => [...prev, assistantMessage])
-    }, 1000)
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setIsSending(false)
+      isSendingRef.current = false
+    }
   }
 
   const handleFileUpload = (files: File[]) => {
