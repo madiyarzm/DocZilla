@@ -1,3 +1,4 @@
+import pickle
 from langchain_upstage import UpstageEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
@@ -5,38 +6,43 @@ from typing import List
 import dotenv
 import os
 
-from openai import OpenAI
-
 dotenv.load_dotenv()
 
 UPSTAGE_API_KEY = os.getenv("UPSTAGE_API_KEY")
 if not UPSTAGE_API_KEY:
     raise ValueError("UPSTAGE_API_KEY not found in environment variables.")
 
-# Set up the embeddings client
+# Models
 embedding_model = UpstageEmbeddings(
     model="embedding-passage",
     upstage_api_key=UPSTAGE_API_KEY
 )
 
-def embed_and_store_chunks(chunks: List[Document], faiss_path: str = "vector_store") -> FAISS:
-    """
-    Embeds a list of Documents and stores them in a FAISS index.
+query_model = UpstageEmbeddings(
+    model="embedding-query",
+    upstage_api_key=UPSTAGE_API_KEY
+)
 
-    Parameters:
-    - chunks: List of langchain Document objects with metadata
-    - faiss_path: Where to persist the FAISS index (optional)
+def embed_text(chunks: List[Document], is_query: bool = False, embedding_store_path: str = "vector_store/embedding_store.pkl") -> List[List[float]]:
+    model = query_model if is_query else embedding_model
 
-    Returns:
-    - FAISS index object
-    """
+    if is_query:
+        return model.embed_documents([doc.page_content for doc in chunks])[0]
 
-    vectorstore = FAISS.from_documents(documents=chunks, embedding=embedding_model)
+    # Embed and store passages
+    embeddings = model.embed_documents([doc.page_content for doc in chunks])
+    stored_data = []
 
-    # Persist index to disk
-    vectorstore.save_local(faiss_path)
+    for embedding, doc in zip(embeddings, chunks):
+        stored_data.append({
+            "embedding": embedding,
+            "content": doc.page_content,
+            "metadata": doc.metadata
+        })
 
-    return vectorstore
+    # Save using pickle
+    os.makedirs(os.path.dirname(embedding_store_path), exist_ok=True)
+    with open(embedding_store_path, "wb") as f:
+        pickle.dump(stored_data, f)
 
-
-# print(embed_and_store_chunks(chunks=[Document(page_content="Hello world", metadata={"source": "example.txt"})], faiss_path="faiss_index"))
+    return stored_data
