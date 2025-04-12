@@ -31,8 +31,11 @@ def embed_text(chunks: List[Document], is_query: bool = False, embedding_store_p
 
     # Embed and store passages
     embeddings = model.embed_documents([doc.page_content for doc in chunks])
-    stored_data = []
-
+    if os.path.exists(embedding_store_path):
+        with open(embedding_store_path, "rb") as f:
+            stored_data = pickle.load(f)
+    else:
+        stored_data = []
     for embedding, doc in zip(embeddings, chunks):
         stored_data.append({
             "embedding": embedding,
