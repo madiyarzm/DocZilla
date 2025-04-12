@@ -102,10 +102,11 @@ export default function LandingPage() {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="py-8 md:py-16 relative overflow-hidden">
+        
+        <section className="py-0 md:py-20 relative overflow-hidden scale-95">
           <div className="container mx-auto px-4 max-w-7xl relative z-10">
             <div className="grid md:grid-cols-2 gap-8 md:gap-4 items-center">
-              <div className="md:pr-12">
+              <div className="md:pr-10">
                 {mounted && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -144,9 +145,9 @@ export default function LandingPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="relative md:pl-4 md:pr-6"
+                  className="relative md:pl-8 md:pr-10"
                 >
-                  <div className="absolute -inset-1.5 bg-gradient-to-r from-primary/50 via-purple-500/50 to-primary/50 rounded-2xl blur-2xl opacity-80"></div>
+
                   <div className="bg-gradient-to-br from-card via-card/95 to-card/90 rounded-2xl border border-border/50 shadow-xl overflow-hidden relative backdrop-blur-sm">
                     <div className="aspect-[4/3] bg-gradient-to-br from-background/80 to-muted/90 p-8 flex items-center justify-center">
                       <div className="text-center max-w-md">
@@ -167,7 +168,7 @@ export default function LandingPage() {
         </section>
 
         {/* Features section */}
-        <section id="features" className="py-32 md:py-40 bg-muted/30 relative mt-32">
+        <section id="features" className="py-15 md:py-30 bg-muted/30 relative mt-40">
           <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent h-40 -top-40"></div>
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center mb-16">
