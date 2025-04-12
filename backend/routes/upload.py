@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from utils.parse import parse_pdf
 from utils.ocr import ocr_image
 from utils.chunk import chunk_text
-from utils.embedding import embed_and_store_chunks
+from utils.embedding import embed_text
 import tempfile
 import shutil
 import os
@@ -38,7 +38,7 @@ async def upload_file(file: UploadFile = File(...)):
         chunks = chunk_text(extracted_text, file.filename)
 
         # Embedding & storing
-        embed_and_store_chunks(chunks)
+        embed_text(chunks)
 
         return JSONResponse(content={"message": "File processed, chunked, embedded and stored successfully!"})
     
