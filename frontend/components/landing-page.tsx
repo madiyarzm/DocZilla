@@ -75,7 +75,7 @@ export default function LandingPage() {
             <div className="rounded-md bg-gradient-to-br from-primary to-purple-600 p-1.5 shadow-lg">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-xl tracking-tight">DocAssist</span>
+            <span className="font-bold text-xl tracking-tight">DocZilla</span>
           </div>
           <div className="flex gap-4 items-center">
             <nav className="hidden md:flex gap-8 mr-4">
@@ -201,7 +201,7 @@ export default function LandingPage() {
             <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-3xl p-12 md:p-16 text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to transform your document workflow?</h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of professionals who save hours every week with DocAssist.
+                Join thousands of professionals who save hours every week with DocZilla.
               </p>
               <Button
                 size="lg"
@@ -224,7 +224,7 @@ export default function LandingPage() {
                 <div className="rounded-md bg-primary p-1">
                   <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="font-bold text-lg">DocAssist</span>
+                <span className="font-bold text-lg">DocZilla</span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">AI-powered document intelligence for modern teams.</p>
             </div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-border/40 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted-foreground mb-4 md:mb-0">© 2025 DocAssist. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground mb-4 md:mb-0">© 2025 DocZilla. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Terms
@@ -339,7 +339,7 @@ export default function LandingPage() {
             </button>
             {activeForm === "login" ? (
               <>
-                <h2 className="text-2xl font-bold mb-6">Log in to DocAssist</h2>
+                <h2 className="text-2xl font-bold mb-6">Log in to DocZilla</h2>
                 <LoginForm onSuccess={handleSuccessfulAuth} />
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">

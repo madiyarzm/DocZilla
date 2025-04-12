@@ -16,7 +16,7 @@ app.include_router(slack_router)
 
 # Allowed frontend URLs
 origins = [
-    "http://localhost:3001",      # Local dev
+    "http://localhost:3000",      # Local dev
     # "https://www.echodoc.app",  # Production
 ]
 

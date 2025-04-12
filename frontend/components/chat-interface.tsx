@@ -111,80 +111,114 @@ export function ChatInterface({
     }
   }
 
+  
+  
   const handleFileUpload = async (files: File[]) => {
     if (!files.length) return
-
+  
+    const file = files[0]
+    const fileSize = (file.size / 1024).toFixed(0) + " KB"
+    const fileType = file.name.endsWith(".pdf") ? "pdf" : "image"
+  
     setIsUploading(true)
     setShowUploader(false)
     setUploadSuccess(false)
-
-    const file = files[0]
-    const fileType = file.name.endsWith(".pdf") ? "pdf" : "image"
-
+  
+    // Create a message indicating file upload
+    const uploadMessage: ChatMessage = {
+      id: `${Date.now()}-user-upload`,
+      role: "user",
+      content: "",
+      timestamp: new Date(),
+      attachments: [
+        {
+          type: fileType,
+          name: file.name,
+          size: fileSize,
+        },
+      ],
+    }
+    setMessages((prev) => [...prev, uploadMessage])
+  
     try {
-      // Upload the file to the backend
       const uploadResponse = await uploadDocument(file)
-      
-      if (uploadResponse.success && uploadResponse.documentId) {
-        // Store the document info
-        setCurrentDocument({
-          id: uploadResponse.documentId,
-          content: uploadResponse.content
-        })
-        setUploadSuccess(true)
-        // Notify parent component about document type
-        onDocumentProcessed(fileType)
-
-        // Add system announcement message
-        const announcementMessage: ChatMessage = {
-          id: `${Date.now()}-announcement`,
-          role: "system",
-          content: `${file.name} has been uploaded`,
-          timestamp: new Date(),
-        }
-
-        // Add the announcement at the current position in the messages array
-        setMessages(prev => {
-          const newMessages = [...prev]
-          newMessages.splice(prev.length, 0, announcementMessage)
-          return newMessages
-        })
-
-        // Add initial assistant message
-        const assistantMessage: ChatMessage = {
-          id: `${Date.now()}-assistant`,
-          role: "assistant",
-          content: "I've received your document. How would you like me to help you with it?",
-          timestamp: new Date(),
-          suggestion: {
-            text: "Would you like me to analyze this document?",
-            action: "analyze_document"
-          }
-        }
-
-        // Add the assistant message after the announcement
-        setMessages(prev => {
-          const newMessages = [...prev]
-          newMessages.splice(prev.length, 0, assistantMessage)
-          return newMessages
-        })
+  
+    //   if (!uploadResponse.success || !uploadResponse.documentId) {
+    //     throw new Error("Upload failed or documentId missing")
+    //   }
+  
+      setCurrentDocument({
+        id: uploadResponse.documentId,
+        content: uploadResponse.content,
+      })
+      setUploadSuccess(true)
+  
+      // Determine document type
+      let docType = "document"
+      let suggestion = "Would you like me to summarize this document?"
+      let assistantContent = "I've analyzed your document and extracted the key information."
+  
+      const name = file.name.toLowerCase()
+      if (name.includes("meeting") || name.includes("notes")) {
+        docType = "meeting_notes"
+        suggestion = "Would you like me to extract action items from these meeting notes?"
+        assistantContent =
+          "I've analyzed your meeting notes and identified action items and decisions discussed."
+      } else if (name.includes("financial") || name.includes("report")) {
+        docType = "financial"
+        suggestion = "Would you like me to visualize the key financial data in this report?"
+        assistantContent =
+          "I've analyzed your financial report. It includes revenue figures, expenses, and projections."
+      } else if (name.includes("project") || name.includes("roadmap")) {
+        docType = "planning"
+        suggestion = "Would you like me to create a timeline from this project document?"
+        assistantContent =
+          "I've analyzed your project planning doc with key milestones and launch dates."
       }
-    } catch (error) {
-      console.error("Error uploading file:", error)
-      // Add error message
-      const errorMessage: ChatMessage = {
-        id: `${Date.now()}-error`,
-        role: "assistant",
-        content: "Sorry, there was an error uploading your document. Please try again.",
+  
+      onDocumentProcessed(docType)
+  
+      const systemMessage: ChatMessage = {
+        id: `${Date.now()}-system`,
+        role: "system",
+        content: `${file.name} has been uploaded successfully.`,
         timestamp: new Date(),
       }
-      setMessages(prev => [...prev, errorMessage])
+  
+      const assistantMessage: ChatMessage = {
+        id: `${Date.now()}-assistant`,
+        role: "assistant",
+        content: assistantContent,
+        timestamp: new Date(),
+        suggestion: {
+          text: suggestion,
+          action: docType === "meeting_notes"
+            ? "extract_action_items"
+            : docType === "financial"
+            ? "visualize_data"
+            : docType === "planning"
+            ? "create_timeline"
+            : "summarize",
+        },
+      }
+  
+      setMessages((prev) => [...prev, systemMessage, assistantMessage])
+    } catch (err) {
+      console.error("Upload error:", err)
+      
+    //   const errorMessage: ChatMessage = {
+    //     id: `${Date.now()}-upload-error`,
+    //     role: "assistant",
+    //     content: "",
+    //     timestamp: new Date(),
+    //   }
+    //   setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsUploading(false)
-      // Reset success state after 2 seconds
       setTimeout(() => setUploadSuccess(false), 2000)
     }
   }
+  
 
   const handleSuggestionAction = (action: string) => {
     // Add user message accepting the suggestion
