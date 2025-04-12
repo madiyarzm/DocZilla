@@ -34,6 +34,10 @@ async def upload_file(file: UploadFile = File(...)):
         else:
             raise HTTPException(status_code=400, detail="Unsupported file type")
 
+        # Save the extracted text to a file
+        with open('data/latest_document.txt', 'w', encoding='utf-8') as f:
+            f.write(extracted_text)
+
         # Chunking
         chunks = chunk_text(extracted_text, file.filename)
 
