@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   X,
   CheckSquare,
@@ -46,6 +45,22 @@ interface ActionGroup {
 
 export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = false }: ActionSidebarProps) {
   const [runningAction, setRunningAction] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    // Проверяем при монтировании
+    checkMobile()
+    
+    // Добавляем слушатель изменения размера окна
+    window.addEventListener('resize', checkMobile)
+    
+    // Убираем слушатель при размонтировании
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Define which actions are available for each document type
   const getActionAvailability = (actionId: string) => {
@@ -73,13 +88,40 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
     }
   }
 
-  const handleRunAction = (actionId: string) => {
+  const handleRunAction = async (actionId: string) => {
     setRunningAction(actionId)
 
-    // Simulate action running
-    setTimeout(() => {
+    try {
+      if (actionId === "send_summary") {
+        const response = await fetch("/api/slack/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          mode: "cors",
+          body: JSON.stringify({
+            message: "New document summary has been generated and shared with the team",
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ detail: "Failed to send Slack message" }))
+          throw new Error(errorData.detail || "Failed to send Slack message")
+        }
+
+        const data = await response.json()
+        console.log("Slack message sent:", data)
+      }
+
+      // Simulate other actions running
+      setTimeout(() => {
+        setRunningAction(null)
+      }, 2000)
+    } catch (error) {
+      console.error("Error running action:", error)
       setRunningAction(null)
-    }, 2000)
+    }
   }
 
   // Define all possible actions grouped by category
@@ -196,7 +238,7 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
                 )}
               </div>
               {/* Only show close button when not permanent or on mobile */}
-              {(!isPermanent || window.innerWidth < 768) && (
+              {(!isPermanent || isMobile) && (
                 <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
                   <X className="h-4 w-4" />
                 </Button>

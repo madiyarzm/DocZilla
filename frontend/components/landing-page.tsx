@@ -25,6 +25,10 @@ export default function LandingPage() {
     router.push("/dashboard")
   }
 
+  const handlePricingClick = () => {
+    router.push("/pricing")
+  }
+
   const features = [
     {
       title: "Smart Document Analysis",
@@ -61,14 +65,14 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col font-sans">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-background -z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-purple-500/5 to-background -z-10 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1600')] bg-top bg-no-repeat opacity-5 -z-10 pointer-events-none" />
 
       {/* Header */}
-      <header className="border-b border-border/40 backdrop-blur-sm bg-background/80 sticky top-0 z-10">
+      <header className="border-b border-border/40 backdrop-blur-md bg-gradient-to-r from-background/95 via-primary/5 to-background/95 sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center max-w-7xl">
           <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary p-1.5">
+            <div className="rounded-md bg-gradient-to-br from-primary to-purple-600 p-1.5 shadow-lg">
               <FileText className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl tracking-tight">DocAssist</span>
@@ -78,9 +82,9 @@ export default function LandingPage() {
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Features
               </a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={handlePricingClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
-              </a>
+              </button>
               <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Documentation
               </a>
@@ -98,10 +102,10 @@ export default function LandingPage() {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="py-20 md:py-32 relative overflow-hidden">
+        <section className="py-8 md:py-16 relative overflow-hidden">
           <div className="container mx-auto px-4 max-w-7xl relative z-10">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
+            <div className="grid md:grid-cols-2 gap-8 md:gap-4 items-center">
+              <div className="md:pr-12">
                 {mounted && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -109,7 +113,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.5 }}
                   >
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight leading-tight">
-                      Transform Documents with <span className="text-primary">AI Intelligence</span>
+                    Make Documents Work for You with <span className="text-primary">AGI-Powered Understanding</span>
                     </h1>
                     <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
                       Upload any document and let our AGI assistant analyze, extract, and take action on your behalf.
@@ -140,13 +144,15 @@ export default function LandingPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="relative"
+                  className="relative md:pl-4 md:pr-6"
                 >
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-2xl blur-xl opacity-50"></div>
-                  <div className="bg-card rounded-2xl border border-border/50 shadow-xl overflow-hidden relative">
-                    <div className="aspect-[4/3] bg-gradient-to-br from-background to-muted p-8 flex items-center justify-center">
+                  <div className="absolute -inset-1.5 bg-gradient-to-r from-primary/50 via-purple-500/50 to-primary/50 rounded-2xl blur-2xl opacity-80"></div>
+                  <div className="bg-gradient-to-br from-card via-card/95 to-card/90 rounded-2xl border border-border/50 shadow-xl overflow-hidden relative backdrop-blur-sm">
+                    <div className="aspect-[4/3] bg-gradient-to-br from-background/80 to-muted/90 p-8 flex items-center justify-center">
                       <div className="text-center max-w-md">
-                        <FileText className="h-20 w-20 mx-auto mb-6 text-primary" />
+                        <div className="rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 p-4 w-fit mx-auto mb-6">
+                          <FileText className="h-16 w-16 text-primary" />
+                        </div>
                         <h3 className="text-2xl font-semibold mb-4">Intelligent Document Processing</h3>
                         <p className="text-muted-foreground">
                           Upload PDFs, images, and documents for instant analysis and actionable insights.
@@ -161,8 +167,8 @@ export default function LandingPage() {
         </section>
 
         {/* Features section */}
-        <section id="features" className="py-20 bg-muted/30 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent h-32 -top-32"></div>
+        <section id="features" className="py-32 md:py-40 bg-muted/30 relative mt-32">
+          <div className="absolute inset-0 bg-gradient-to-b from-background to-transparent h-40 -top-40"></div>
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
