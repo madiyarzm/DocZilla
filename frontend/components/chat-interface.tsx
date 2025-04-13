@@ -90,6 +90,31 @@ export function ChatInterface({
     };
   }, []);
 
+  // Listen for summary generated event
+  useEffect(() => {
+    const handleSummaryGenerated = (event: CustomEvent) => {
+      const { summary } = event.detail;
+      
+      // Add the summary to the chat
+      const summaryMessage: ChatMessage = {
+        id: `${Date.now()}-summary`,
+        role: "assistant",
+        content: summary,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, summaryMessage]);
+    };
+    
+    // Add event listener
+    window.addEventListener('summaryGenerated', handleSummaryGenerated as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('summaryGenerated', handleSummaryGenerated as EventListener);
+    };
+  }, []);
+
   const handleSendMessage = async () => {
     if (!input.trim() || isSendingRef.current) return
 

@@ -140,6 +140,33 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
           } 
         })
         window.dispatchEvent(event)
+      } else if (actionId === "summarize") {
+        // Call the send-slack endpoint with only_summary parameter
+        const response = await fetch("http://127.0.0.1:8000/send-slack?only_summary=true", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          mode: "cors",
+          body: JSON.stringify({}),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ detail: "Failed to generate summary" }))
+          throw new Error(errorData.detail || "Failed to generate summary")
+        }
+
+        const data = await response.json()
+        console.log("Summary generated:", data)
+        
+        // Dispatch a custom event to notify the chat interface
+        const event = new CustomEvent('summaryGenerated', { 
+          detail: { 
+            summary: data.summary 
+          } 
+        })
+        window.dispatchEvent(event)
       }
 
       // Simulate other actions running
