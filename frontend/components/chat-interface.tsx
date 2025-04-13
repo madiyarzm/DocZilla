@@ -220,7 +220,7 @@ export function ChatInterface({
   }
   
 
-  const handleSuggestionAction = (action: string) => {
+  const handleSuggestionAction = async (action: string) => {
     // Add user message accepting the suggestion
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -232,7 +232,7 @@ export function ChatInterface({
     setMessages((prev) => [...prev, userMessage])
 
     // Simulate AI processing the action
-    setTimeout(() => {
+    setTimeout(async () => {
       let responseContent = ""
 
       switch (action) {
@@ -249,8 +249,15 @@ export function ChatInterface({
             "I've created a project timeline based on your planning document. The critical path shows the product launch is scheduled for October 15th, with beta testing beginning on September 1st. Would you like me to export this timeline to your project management tool?"
           break
         case "summarize":
-          responseContent =
-            "Here's a summary of your document:\n\nThe document outlines the company's strategic initiatives for the upcoming fiscal year, focusing on market expansion, product innovation, and operational efficiency. Key points include entering two new markets in Q2, launching three product enhancements in Q3, and implementing a new CRM system by year-end."
+          const response = await fetch("http://127.0.0.1:8000/send-slack?only_summary=true", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          })
+          const data = await response.json()
+          responseContent = data.summary
           break
         default:
           responseContent =

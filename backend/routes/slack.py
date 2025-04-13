@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import requests
+from typing import Optional
 
 slack_router = APIRouter()
 
@@ -21,7 +22,7 @@ SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 LATEST_DOC_PATH = "data/latest_document.txt"
 
 @slack_router.post("/send-slack", tags=["Slack"])
-async def send_slack_summary():
+async def send_slack_summary(only_summary: Optional[bool] = None):
     try:
         # Step 1: Read the latest document
         if not os.path.exists(LATEST_DOC_PATH):
@@ -51,6 +52,12 @@ async def send_slack_summary():
         )
 
         summary = response.choices[0].message.content.strip()
+        if only_summary:
+            return {
+                "status": "success",
+                "message": "Summary sent to Slack successfully.",
+                "summary": summary
+            }
 
         # Step 3: Send the summary to Slack
         payload = {"text": f"*Summary of Latest Document:*\n{summary}"}

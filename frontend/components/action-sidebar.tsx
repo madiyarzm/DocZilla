@@ -93,7 +93,7 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
 
     try {
       if (actionId === "send_summary") {
-        const response = await fetch("/api/slack/send", {
+        const response = await fetch("http://127.0.0.1:8000/send-slack", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
