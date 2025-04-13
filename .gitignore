@@ -28,7 +28,4 @@ next-env.d.ts
 
 # Miscellaneous
 *.pyc
-*.pdf
-*.png
-*.jpg
-*.jpeg
+
