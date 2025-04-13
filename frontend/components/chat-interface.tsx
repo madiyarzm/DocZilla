@@ -65,6 +65,31 @@ export function ChatInterface({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // Listen for policy comparison complete event
+  useEffect(() => {
+    const handlePolicyComparisonComplete = (event: CustomEvent) => {
+      const { formattedResults } = event.detail;
+      
+      // Add the policy comparison results to the chat
+      const policyMessage: ChatMessage = {
+        id: `${Date.now()}-policy-comparison`,
+        role: "assistant",
+        content: formattedResults,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, policyMessage]);
+    };
+    
+    // Add event listener
+    window.addEventListener('policyComparisonComplete', handlePolicyComparisonComplete as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('policyComparisonComplete', handlePolicyComparisonComplete as EventListener);
+    };
+  }, []);
+
   const handleSendMessage = async () => {
     if (!input.trim() || isSendingRef.current) return
 

@@ -83,6 +83,8 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
         return documentType === "planning"
       case "summarize":
         return true // Available for all document types
+      case "checklist":
+        return true // Available for all document types
       default:
         return false
     }
@@ -112,6 +114,32 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
 
         const data = await response.json()
         console.log("Slack message sent:", data)
+      } else if (actionId === "checklist") {
+        // Call the compare-policy endpoint
+        const response = await fetch("http://127.0.0.1:8000/compare-policy", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          mode: "cors",
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ detail: "Failed to compare policy" }))
+          throw new Error(errorData.detail || "Failed to compare policy")
+        }
+
+        const data = await response.json()
+        console.log("Policy comparison completed:", data)
+        
+        // Dispatch a custom event to notify the chat interface
+        const event = new CustomEvent('policyComparisonComplete', { 
+          detail: { 
+            formattedResults: data.formatted_results 
+          } 
+        })
+        window.dispatchEvent(event)
       }
 
       // Simulate other actions running
