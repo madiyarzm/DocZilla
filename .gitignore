@@ -36,3 +36,5 @@ next-env.d.ts
 backend/structure.txt
 /backend/vector_store
 backend/data/latest_document.txt
+backend/data/company_policy.txt
+backend/data/policy_checklist.txt

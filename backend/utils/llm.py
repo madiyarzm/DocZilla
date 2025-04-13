@@ -25,7 +25,8 @@ def chat_with_context(query: str, chunks: List[str]) -> str:
     """
     context_text = "\n".join([f"- Chunk {i+1}: {chunk}" for i, chunk in enumerate(chunks)])
 
-    messages = [
+    # Format messages according to the Upstage API requirements
+    formatted_messages = [
         {
             "role": "system",
             "content": (
@@ -41,6 +42,32 @@ def chat_with_context(query: str, chunks: List[str]) -> str:
 
     response = client.chat.completions.create(
         model="solar-pro",
-        messages=messages
+        messages=formatted_messages
     )
-    return response.choices[0].message["content"]
+    
+    # Access the content directly from the response
+    return response.choices[0].message.content
+
+def chat_with_solar(message: str) -> str:
+    """
+    Simple one-message chat with the Solar model.
+    
+    Args:
+        message: The user message to send to the model
+        
+    Returns:
+        The model's response as a string
+    """
+    # Format messages according to the Upstage API requirements
+    formatted_messages = [
+        {"role": "system", "content": "You are a helpful assistant that provides clear and concise responses."},
+        {"role": "user", "content": message}
+    ]
+    
+    response = client.chat.completions.create(
+        model="solar-pro",
+        messages=formatted_messages
+    )
+    
+    # Access the content directly from the response
+    return response.choices[0].message.content
