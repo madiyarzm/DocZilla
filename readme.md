@@ -1,4 +1,4 @@
-# 📄 DocZilla DocZilla
+# 📄 DocZilla
 
 ### 📌 Overview
 This project was developed as part of the AGI Agent Application Hackathon. It aims to solve the challenge of understanding, verifying, and summarizing documents (such as contracts or policies) using an LLM-powered agent, enabling automated compliance checks, summarization, and intelligent extraction of insights.
