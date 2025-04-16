@@ -10,15 +10,13 @@ This project was developed as part of the AGI Agent Application Hackathon. It ai
 ### Demo 🎉
 Experience the project in action with our live demo. Click the link below for a guided walkthrough showcasing document upload, parsing, compliance checklist extraction, and Slack integration.
 
-[Watch Live Demo](https://example.com/demo)
+[Watch Demo Video](https://drive.google.com/file/d/16xkGJr7-6aurjEV-tFU9HOB-LRJxrJI7/view?usp=sharing)
 
 ![pic1](/screenshots/pic1.jpg)
 
 ![pic2](/screenshots/pic2.jpg)
 
 ![pic3](/screenshots/pic3.jpg)
-
-[Watch Demo Video](https://drive.google.com/file/d/16xkGJr7-6aurjEV-tFU9HOB-LRJxrJI7/view?usp=sharing)
 
 ### 🧩 Tech Stack
 - **Frontend**: Next.js, Tailwind CSS
