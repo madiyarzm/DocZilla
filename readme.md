@@ -27,15 +27,6 @@ Experience the project in action with our live demo. Click the link below for a 
 - **Others**: OpenAI API (solar-pro via Upstage), LangChain, Slack Webhooks
 
 ### 🏗️ Project Structure
-
-
-### 🧩 Tech Stack
-- **Frontend**: [e.g., React, Vue, HTML/CSS]
-- **Backend**: [e.g., Node.js, Flask, Django]
-- **Database**: [e.g., MongoDB, MySQL, Firebase]
-- **Others**: [e.g., OpenAI API, LangChain, HuggingFace, Docker]
-
-### 🏗️ Project Structure
 ```
 📁 The-Nomads/
 ├── frontend/
@@ -144,6 +135,3 @@ uvicorn main:app --reload
 ### 📄 License
 This project is licensed under the [MIT license](https://opensource.org/licenses/MIT).  
 See the LICENSE file for more details.
-
-### 💬 Additional Notes
-- Feel free to include any other relevant notes or links here.
