@@ -1,0 +1,3 @@
+# Optional: higher-quality local embeddings (pulls in torch — large).
+# The app works without this via a hashing-based fallback.
+sentence-transformers==3.0.1

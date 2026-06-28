@@ -10,6 +10,7 @@ import { FileUploader } from "@/components/file-uploader"
 import { motion, AnimatePresence } from "framer-motion"
 import { sendChatMessage } from "@/services/chat"
 import { uploadDocument } from "@/services/upload"
+import { apiUrl } from "@/lib/api"
 
 interface ChatMessage {
   id: string
@@ -56,7 +57,7 @@ export function ChatInterface({
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isSending, setIsSending] = useState(false)
   const isSendingRef = useRef(false)
-  const [currentDocument, setCurrentDocument] = useState<{ id?: string; content?: string } | null>(null)
+  const [currentDocument, setCurrentDocument] = useState<{ filename?: string; chunks?: number } | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [uploadAnnouncement, setUploadAnnouncement] = useState<{ text: string; visible: boolean } | null>(null)
 
@@ -108,18 +109,16 @@ export function ChatInterface({
     setInput("")
 
     try {
-      // Include document info in the chat request if available
+      // The backend retrieves relevant chunks from its own vector store; the
+      // chat endpoint takes only the message history.
       const chatPayload = {
         messages: [...messages, userMessage],
-        documentId: currentDocument?.id,
-        documentContent: currentDocument?.content
       }
 
-      // Send messages to backend and get response
-      const updatedMessages = await sendChatMessage(chatPayload)
-      
+      const res = await sendChatMessage(chatPayload)
+
       // Update messages with the complete response
-      setMessages(updatedMessages)
+      setMessages(res.messages)
     } catch (error) {
       console.error("Error sending message:", error)
       // Add error message to chat
@@ -167,14 +166,10 @@ export function ChatInterface({
   
     try {
       const uploadResponse = await uploadDocument(file)
-  
-    //   if (!uploadResponse.success || !uploadResponse.documentId) {
-    //     throw new Error("Upload failed or documentId missing")
-    //   }
-  
+
       setCurrentDocument({
-        id: uploadResponse.documentId,
-        content: uploadResponse.content,
+        filename: uploadResponse.filename,
+        chunks: uploadResponse.chunks,
       })
       setUploadSuccess(true)
   
@@ -274,7 +269,7 @@ export function ChatInterface({
             "I've created a project timeline based on your planning document. The critical path shows the product launch is scheduled for October 15th, with beta testing beginning on September 1st. Would you like me to export this timeline to your project management tool?"
           break
         case "summarize":
-          const response = await fetch("http://127.0.0.1:8000/send-slack?only_summary=true", {
+          const response = await fetch(apiUrl("/send-slack?only_summary=true"), {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

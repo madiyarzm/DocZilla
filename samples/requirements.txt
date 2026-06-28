@@ -1,0 +1,8 @@
+# Sample dependency manifest for the License Compliance demo.
+# Try it against project license "MIT": mysqlclient (GPL-2.0) is flagged as a
+# conflict, paramiko is weak-copyleft (LGPL), the rest are permissive.
+requests==2.31.0
+flask>=2.0
+numpy==1.26.4
+paramiko==3.4.0
+mysqlclient==2.2.4

@@ -1,5 +1,11 @@
 # General
 .env
+.env.local
+
+# Python
+.venv/
+/backend/.venv/
+__pycache__/
 
 # Node.js
 /node_modules
@@ -25,6 +31,10 @@ next-env.d.ts
 
 # Vercel
 .vercel
+
+# Runtime artifacts (regenerated at runtime; not source)
+/backend/vector_store/*.pkl
+/backend/data/latest_document.txt
 
 # Miscellaneous
 *.pyc

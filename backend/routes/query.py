@@ -1,25 +1,27 @@
+"""Raw retrieval endpoint — returns the top matching chunks with metadata."""
 from fastapi import APIRouter, HTTPException
-from langchain_core.documents import Document
-from utils.embedding import embed_text
-from utils.retrieve import retrieve_similar_chunks
+from pydantic import BaseModel
+
+from utils.citations import build_citations
+from utils.stores import get_main_store
+from utils.trending import record_query
 
 query_router = APIRouter()
 
+
+class QueryPayload(BaseModel):
+    query: str
+    k: int = 5
+
+
 @query_router.post("/query", tags=["Query"])
-async def query_documents(payload: str):
-    try:
-        # Wrap the payload in a Document
-        query_doc = Document(page_content=payload)
-
-        # Embed the query
-        query_embeddings = embed_text([query_doc], is_query=True)
-
-        # Retrieve similar chunks from FAISS index
-        results = retrieve_similar_chunks(query_embeddings)
-
-        return {
-            "query": payload,
-            "relevant_chunks": results
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def query_documents(payload: QueryPayload):
+    if not payload.query.strip():
+        raise HTTPException(status_code=400, detail="Empty query.")
+    record_query(payload.query)
+    results = get_main_store().search(payload.query, k=payload.k)
+    return {
+        "query": payload.query,
+        "relevant_chunks": results,
+        "citations": build_citations(results),
+    }

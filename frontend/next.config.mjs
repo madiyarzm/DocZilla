@@ -11,6 +11,9 @@ try {
   }
 }
 
+// DocZilla backend — use 8001 so we never collide with other dev apps on 8000.
+const BACKEND = process.env.BACKEND_URL || "http://127.0.0.1:8001"
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -26,6 +29,19 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+  },
+  async rewrites() {
+    const proxy = (path) => ({ source: path, destination: `${BACKEND}${path}` })
+    return [
+      proxy("/upload"),
+      proxy("/chat"),
+      proxy("/query"),
+      proxy("/send-slack"),
+      proxy("/upload-policy"),
+      proxy("/compare-policy"),
+      proxy("/health"),
+      { source: "/api/:path*", destination: `${BACKEND}/api/:path*` },
+    ]
   },
 }
 

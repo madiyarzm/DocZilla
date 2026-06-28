@@ -1,30 +1,24 @@
-const API_BASE_URL = "http://127.0.0.1:8000"
+import { apiUrl } from "@/lib/api"
 
 export interface UploadResponse {
-  success: boolean
   message: string
-  documentId?: string
-  content?: string
+  filename: string
+  chunks: number
+  embedding_backend: string
+  sample_metadata?: Array<Record<string, unknown>>
 }
 
 export async function uploadDocument(file: File): Promise<UploadResponse> {
-  try {
-    const formData = new FormData()
-    formData.append("file", file)
+  const formData = new FormData()
+  formData.append("file", file)
 
-    const response = await fetch(`${API_BASE_URL}/upload`, {
-      method: "POST",
-      body: formData,
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error("Error uploading document:", error)
-    throw error
+  const response = await fetch(apiUrl("/upload"), {
+    method: "POST",
+    body: formData,
+  })
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: "Upload failed" }))
+    throw new Error(err.detail || `HTTP error! status: ${response.status}`)
   }
-} 
+  return response.json()
+}

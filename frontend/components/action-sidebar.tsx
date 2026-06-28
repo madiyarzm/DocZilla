@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import { Separator } from "@/components/ui/separator"
+import { apiUrl } from "@/lib/api"
 
 interface ActionSidebarProps {
   documentType: string | null
@@ -95,7 +96,7 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
 
     try {
       if (actionId === "send_summary") {
-        const response = await fetch("http://127.0.0.1:8000/send-slack", {
+        const response = await fetch(apiUrl("/send-slack"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -116,7 +117,7 @@ export function ActionSidebar({ documentType, isOpen, onClose, isPermanent = fal
         console.log("Slack message sent:", data)
       } else if (actionId === "checklist") {
         // Call the compare-policy endpoint
-        const response = await fetch("http://127.0.0.1:8000/compare-policy", {
+        const response = await fetch(apiUrl("/compare-policy"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

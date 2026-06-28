@@ -1,0 +1,14 @@
+{
+  "name": "sample-app",
+  "version": "1.0.0",
+  "description": "Sample npm manifest for the DocZilla License Compliance demo (all permissive against an MIT project).",
+  "dependencies": {
+    "react": "^18.3.1",
+    "express": "^4.19.2",
+    "axios": "^1.7.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

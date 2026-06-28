@@ -1,6 +1,14 @@
-fastapi==0.110.0
-uvicorn==0.29.0
-openai==1.52.2
-langchain==0.3.23
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
 python-dotenv==1.0.1
-pydantic==2.6.4
+pydantic==2.9.2
+requests==2.32.3
+numpy==1.26.4
+# 1.52.x crashes with modern httpx ("proxies" TypeError) — needs >=1.57.
+openai>=1.57.0
+# Local embeddings are OPTIONAL. Without sentence-transformers installed the app
+# automatically falls back to a deterministic hashing embedder, so the backend
+# stays lightweight (no torch) for cloud deploys. For higher-quality semantic
+# search locally, install the ML extras:  pip install -r requirements-ml.txt
+

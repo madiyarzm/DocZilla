@@ -2,70 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  DocZilla design system — Hybrid.
+  Default (:root) is the LIGHT "paper" theme used by the /app workspace.
+  `.dz-dark` re-scopes the same shadcn tokens to the dark cinematic theme
+  used by the marketing landing, so shadcn components adapt automatically.
+*/
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* paper / app */
+    --background: 60 14% 98%;        /* #FAFAF8 */
+    --foreground: 225 17% 9%;        /* #14161C */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 225 17% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 225 17% 9%;
+    --primary: 226 100% 59%;         /* #2D5BFF */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 60 9% 96%;
+    --secondary-foreground: 225 17% 12%;
+    --muted: 60 9% 95%;
+    --muted-foreground: 226 10% 40%; /* #5B6170 */
+    --accent: 226 100% 96%;
+    --accent-foreground: 226 100% 40%;
+    --destructive: 1 73% 53%;        /* #E5484D */
+    --destructive-foreground: 0 0% 100%;
+    --border: 60 9% 90%;             /* #E7E7E2 */
+    --input: 60 9% 90%;
+    --ring: 226 100% 59%;
+    --radius: 0.75rem;
 
-    /* Sidebar variables */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* brand verdict + accents (hex; not consumed by shadcn) */
+    --dz-pass: #1f9d6b;
+    --dz-fail: #e5484d;
+    --dz-amb: #c98a00;
+    --dz-violet: #6d5cf0;
+    --dz-grid: rgba(20, 22, 28, 0.05);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 226 10% 35%;
+    --sidebar-primary: 226 100% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 60 9% 95%;
+    --sidebar-accent-foreground: 225 17% 12%;
+    --sidebar-border: 60 9% 90%;
+    --sidebar-ring: 226 100% 59%;
   }
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 224.3 76.3% 48%;
+  .dz-dark {
+    --background: 225 29% 5%;         /* #0A0C12 */
+    --foreground: 222 32% 95%;        /* #ECEFF6 */
+    --card: 224 24% 9%;              /* #11141C */
+    --card-foreground: 222 32% 95%;
+    --popover: 224 24% 9%;
+    --popover-foreground: 222 32% 95%;
+    --primary: 221 100% 62%;         /* #3D7BFF */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 223 18% 13%;
+    --secondary-foreground: 222 32% 95%;
+    --muted: 223 18% 13%;
+    --muted-foreground: 225 11% 62%; /* #8A90A2 */
+    --accent: 223 18% 15%;
+    --accent-foreground: 222 32% 95%;
+    --destructive: 351 95% 71%;
+    --destructive-foreground: 225 29% 5%;
+    --border: 223 18% 15%;           /* #20242E */
+    --input: 223 18% 15%;
+    --ring: 221 100% 62%;
 
-    /* Sidebar variables */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --dz-pass: #34d399;
+    --dz-fail: #fb7185;
+    --dz-amb: #fbbf24;
+    --dz-violet: #8b7cff;
+    --dz-grid: rgba(236, 239, 246, 0.045);
   }
 }
 
@@ -75,5 +84,46 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .font-mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+  }
+  .text-pass { color: var(--dz-pass); }
+  .text-fail { color: var(--dz-fail); }
+  .text-amb { color: var(--dz-amb); }
+  .bg-pass\/10 { background-color: color-mix(in srgb, var(--dz-pass) 12%, transparent); }
+  .bg-fail\/10 { background-color: color-mix(in srgb, var(--dz-fail) 12%, transparent); }
+  .bg-amb\/10 { background-color: color-mix(in srgb, var(--dz-amb) 12%, transparent); }
+
+  /* faint engineering grid for the dark hero */
+  .dz-grid {
+    background-image:
+      linear-gradient(to right, var(--dz-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--dz-grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+  .dz-radial {
+    background:
+      radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 70%);
+  }
+  .dz-glow {
+    box-shadow: 0 0 0 1px hsl(var(--border)),
+      0 18px 60px -20px color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
   }
 }

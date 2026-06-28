@@ -1,6 +1,14 @@
 import { ChatMessage } from "@/types/chat"
+import { apiUrl } from "@/lib/api"
 
-const API_BASE_URL = "http://127.0.0.1:8000"
+export interface Citation {
+  filename: string
+  page: number
+  section: string
+  clause_id: number | null
+  exact_text_snippet: string
+  score: number
+}
 
 interface ChatPayload {
   messages: ChatMessage[]
@@ -8,29 +16,24 @@ interface ChatPayload {
   documentContent?: string
 }
 
-export async function sendChatMessage(payload: ChatPayload): Promise<ChatMessage[]> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
+export interface ChatResult {
+  messages: ChatMessage[]
+  citations: Citation[]
+}
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+export async function sendChatMessage(payload: ChatPayload): Promise<ChatResult> {
+  const response = await fetch(apiUrl("/chat"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
 
-    const data = await response.json()
-    // Convert timestamp strings to Date objects and ensure unique IDs
-    return data.messages.map((message: any, index: number) => ({
-      ...message,
-      id: `${Date.now()}-${index}`,
-      timestamp: new Date(message.timestamp || Date.now())
-    }))
-  } catch (error) {
-    console.error("Error sending chat message:", error)
-    throw error
-  }
-} 
+  const data = await response.json()
+  const messages = data.messages.map((message: any, index: number) => ({
+    ...message,
+    id: `${Date.now()}-${index}`,
+    timestamp: new Date(message.timestamp || Date.now()),
+  }))
+  return { messages, citations: data.citations || [] }
+}

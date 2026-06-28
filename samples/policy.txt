@@ -1,0 +1,36 @@
+Acme Corp Vendor Contract Compliance Policy
+
+Data Retention
+
+All customer data must be retained for a minimum of seven (7) years and must be
+encrypted at rest using industry-standard encryption (AES-256 or stronger).
+
+Data Deletion
+
+Vendors must delete or return all customer personal data within thirty (30) days
+of a written deletion request, in accordance with GDPR.
+
+Termination
+
+Either party may terminate the agreement, but only with at least thirty (30)
+days of prior written notice to the other party.
+
+Confidentiality
+
+All confidential information must remain protected, and confidentiality
+obligations must survive termination of the agreement for at least three (3)
+years.
+
+Liability
+
+The contract must include a limitation of liability clause that caps each
+party's aggregate liability at the total fees paid under the agreement.
+
+Governing Law
+
+The agreement must specify the governing law and jurisdiction for disputes.
+
+Subprocessors
+
+The vendor must obtain prior written approval before engaging any third-party
+subprocessor that will handle customer data.

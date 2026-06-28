@@ -1,53 +1,57 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
-from utils.parse import parse_pdf
-from utils.ocr import ocr_image
-from utils.chunk import chunk_text
-from utils.embedding import embed_text
-import tempfile
-import shutil
 import os
+import shutil
+import tempfile
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
+from config import DATA_DIR
+from utils.embeddings import backend_name
+from utils.ingest import ingest_file
+from utils.stores import get_main_store
 
 upload_router = APIRouter()
 
-ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg"]
-ALLOWED_PDF_TYPE = "application/pdf"
+ALLOWED_EXTS = {".pdf", ".png", ".jpg", ".jpeg", ".txt", ".docx", ".json"}
 
 
 @upload_router.post("/upload", tags=["Upload"])
 async def upload_file(file: UploadFile = File(...)):
-    if file.content_type not in ALLOWED_IMAGE_TYPES + [ALLOWED_PDF_TYPE]:
-        raise HTTPException(status_code=400, detail="Unsupported file type. Only PDFs and images are allowed.")
+    filename = file.filename or "upload"
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ALLOWED_EXTS and filename not in ("package.json", "requirements.txt"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Allowed: PDF, PNG, JPG, "
+            "DOCX, TXT, package.json, requirements.txt.",
+        )
 
+    tmp_path = None
     try:
-        # Save to temporary file
-        suffix = os.path.splitext(file.filename)[-1]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
             shutil.copyfileobj(file.file, tmp)
             tmp_path = tmp.name
 
-        # Use OCR for images, Parse for PDFs
-        if file.content_type in ALLOWED_IMAGE_TYPES:
-            extracted_text = ocr_image(tmp_path)
-        elif file.content_type == ALLOWED_PDF_TYPE:
-            extracted_text = parse_pdf(tmp_path)
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported file type")
+        full_text, chunks = ingest_file(tmp_path, filename)
 
-        # Save the extracted text to a file
-        with open('data/latest_document.txt', 'w', encoding='utf-8') as f:
-            f.write(extracted_text)
+        # Persist latest extracted text (used by the Slack summary feature).
+        with open(os.path.join(DATA_DIR, "latest_document.txt"), "w", encoding="utf-8") as f:
+            f.write(full_text)
 
-        # Chunking
-        chunks = chunk_text(extracted_text, file.filename)
+        store = get_main_store()
+        store.add(
+            [c["content"] for c in chunks],
+            [c["metadata"] for c in chunks],
+        )
 
-        # Embedding & storing
-        embed_text(chunks)
-
-        return JSONResponse(content={"message": "File processed, chunked, embedded and stored successfully!"})
-    
+        return {
+            "message": "File ingested, chunked, embedded and stored.",
+            "filename": filename,
+            "chunks": len(chunks),
+            "embedding_backend": backend_name(),
+            "sample_metadata": [c["metadata"] for c in chunks[:3]],
+        }
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     finally:
-        try:
+        if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
-        except Exception:
-            pass

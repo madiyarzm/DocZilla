@@ -1,135 +1,146 @@
-# 📄 DocZilla
+<div align="center">
 
-### 📌 Overview
-This project was developed as part of the AGI Agent Application Hackathon. It aims to solve the challenge of understanding, verifying, and summarizing documents (such as contracts or policies) using an LLM-powered agent, enabling automated compliance checks, summarization, and intelligent extraction of insights.
+# 🦖 DocZilla
 
-### 🚀 Key Features
-- ✅ **Document Upload & Parsing**: Admins and users can upload documents which are parsed, summarized, or checked against internal policies.
-- ✅ **Slack Notification**: Automatically generates a summary of the latest uploaded document and sends it to a Slack channel via webhook.
-- ✅ **Compliance Checklist Extraction**: Parses internal policy documents and uses the LLM to extract a structured, testable checklist to compare against future contracts.
-### Demo 🎉
-Experience the project in action with our live demo. Click the link below for a guided walkthrough showcasing document upload, parsing, compliance checklist extraction, and Slack integration.
+### The agent that reads the fine print.
 
-[Watch Demo Video](https://drive.google.com/file/d/16xkGJr7-6aurjEV-tFU9HOB-LRJxrJI7/view?usp=sharing)
+**An agentic compliance platform** — upload your policy and a contract, and DocZilla audits
+every clause against it, flags what fails, drafts the rewrite, and re-checks until it passes.
+Every answer cites its exact source.
 
-![pic1](/screenshots/pic1.jpg)
+[**Live demo →**](https://your-deployment.vercel.app) &nbsp;·&nbsp; Built with FastAPI · Next.js · Upstage Solar
 
-![pic2](/screenshots/pic2.jpg)
+</div>
 
-![pic3](/screenshots/pic3.jpg)
+---
 
-### 🧩 Tech Stack
-- **Frontend**: Next.js, Tailwind CSS
-- **Backend**: FastAPI
-- **Database**: FAISS (vector database)
-- **Others**: OpenAI API (solar-pro via Upstage), LangChain, Slack Webhooks
+## Why this exists
 
-### 🏗️ Project Structure
+Compliance review is slow, manual, and easy to get wrong — someone reads a contract line by
+line against an internal policy and hopes they didn't miss anything. DocZilla turns that into a
+verifiable, **agentic loop**: it extracts a testable checklist from the policy, checks the
+contract clause by clause, and — crucially — doesn't stop at finding problems. It proposes a
+fix, applies it, and runs the audit again, iterating until everything passes or you stop it.
+The result is a compliance score, a per-clause verdict with cited evidence, suggested rewrites,
+and a full timestamped audit trail.
+
+> Originally a hackathon project (“The Nomads”), rebuilt from the ground up: reasoning moved to a
+> single LLM provider, a real agentic loop, mandatory source citations, a dependency-license
+> checker, and a complete UI/UX redesign.
+
+## What it does
+
+| Feature | What's interesting about it |
+|---|---|
+| **🔁 Agentic compliance loop** | Policy → checklist → clause-level verdicts (Pass / Fail / Ambiguous) → suggested rewrites → re-check, iterating to convergence. Returns a score, per-clause evidence, and an audit trail. |
+| **📎 Source citations** | Every chat answer carries `{filename, section, clause, page, exact snippet}`. If retrieval finds nothing, it says *“I couldn't find a source”* instead of hallucinating. |
+| **⚖️ License compliance** | Point it at a `package.json` or `requirements.txt`; it resolves each dependency's license from npm / PyPI (incl. PEP 639 `license_expression`) and flags SPDX conflicts with your project license. |
+| **📈 Trending questions** | In-memory frequency tracking with semantic de-duplication (questions that mean the same thing merge). |
+
+## How it works
+
 ```
-📁 The-Nomads/
-├── frontend/
-│    ├── components.json             # Central config for UI component references.
-│    ├── next.config.mjs             # Next.js custom configuration settings.
-│    ├── package-lock.json           # Auto-generated lockfile for npm dependency versions.
-│    ├── package.json                # Project metadata and frontend dependencies.
-│    ├── tailwind.config.ts          # Tailwind CSS theme and utility configuration.
-│    ├── tsconfig.json               # TypeScript compiler options and path aliases.
-│    ├── app/
-│    │   ├── globals.css             # Global styles applied across the entire app.
-│    │   ├── layout copy.tsx         # Backup or experimental layout file.
-│    │   ├── layout.tsx              # Root layout component for consistent app structure.
-│    │   ├── page.tsx                # Landing page of the application.
-│    │   ├── dashboard/
-│    │   │   └── page.tsx            # User dashboard displaying chat interface and uploads.
-│    │   └── pricing/
-│    │       └── page.tsx            # Pricing page showing subscription plans.
-│    ├── components/
-│    │   ├── action-panel.tsx        # Button panel for user interactions.
-│    │   ├── action-sidebar.tsx      # Sidebar showing actions or document options.
-│    │   ├── app-sidebar.tsx         # Main app sidebar for navigation.
-│    │   ├── chat-interface.tsx      # Main component for displaying chat sessions.
-│    │   ├── chat-panel.tsx          # Panel to display chat messages and input field.
-│    │   ├── file-uploader.tsx       # Component for uploading policy and contract files.
-│    │   ├── landing-page.tsx        # Component structuring the homepage content.
-│    │   ├── login-form.tsx          # Authentication form for login.
-│    │   ├── signup-form.tsx         # Authentication form for new user registration.
-│    │   ├── theme-provider.tsx      # Context for dark/light mode and theme settings.
-│    │   ├── pricing/
-│    │   │   ├── pricing-cards.tsx   # Reusable pricing plan cards.
-│    │   │   ├── pricing-header.tsx  # Header text and layout for pricing section.
-│    │   │   └── pricing-toggle.tsx  # Toggle between monthly/yearly billing.
-│    │   └── ui/                     # Shared low-level UI components (e.g., buttons, modals).
-│    ├── hooks/                      # Custom React hooks for managing state and logic.
-│    ├── lib/                        # Helper functions and client-side utilities.
-│    ├── public/                     # Static files like logos, icons, etc.
-│    ├── services/
-│    │   ├── chat.ts                 # API handler for sending/receiving chat messages.
-│    │   └── upload.ts               # API handler for file upload requests.
-│    ├── styles/
-│    │   └── globals.css             # Duplicate reference for styling, used by legacy files.
-│    └── types/
-│        └── chat.ts                 # Type definitions related to chat message objects.
-├── backend/
-│    ├── main.py                     # FastAPI app
-│    ├── routes/
-│    │   ├── upload.py               # uploading documents to be parsed and then stored in the vector database
-│    │   ├── query.py                # embedding the query (prompt), and compare it to the vectore database using cosine similarity
-│    │   ├── chat.py                 # managing the session connection between the user and the LLM
-│    │   ├── slack.py                # summarizing the document and send the summary to slack
-│    │   └── policy.py               # uploading the internal policy to the database and checking the contracts against it
-│    ├── utils/
-│    │   ├── parse.py                # Upstage API helper for parsing docs
-│    │   ├── ocr.py                  # Upstage API helper for ocr images
-│    │   ├── embedding.py            # converting string to vector representations (embeddings)
-│    │   ├── chunk.py                # dividing the big documents into smaller, relatable parts, utilizing metadata
-│    │   ├── llm.py                  # managing chat sessions while keeping the history
-│    │   └── retrieve.py             # comparing the queries to the vectors in the database and retrieve the most similar ones
-│    ├── vector_store/
-│    │   ├── embedding_store.pkl     # saved FAISS index
-│    │   └── latest_document.pkl     # keeping track of the latest added document (is overwritten every time we upload)
-│    ├── schemas/
-│    │   └── chat_payload.py         # pydantic model for the chat session object
-│    ├── data/
-│    │   ├── policy_checklist.txt    # the extracted checklist from the policy
-│    │   └── latest_document.txt     # the parsed data from the latest document
-│    └── .env                        # UPSTAGE_API_KEY, etc.
-└── README.md
+                         ┌──────────────────────────────────────────────┐
+  policy.pdf ─┐          │  AGENTIC COMPLIANCE LOOP                      │
+              ├─ ingest ─►  1. extract testable checklist (severity)    │
+ contract.pdf ┘  (parse,  │  2. check each clause → PASS / FAIL / AMBIG  │
+                  OCR,    │  3. draft rewrites for failures              │
+                  chunk)  │  4. apply + re-check ──┐ until all pass or   │
+                         │     ▲──────────────────┘ max iterations       │
+                         └──────────────────────────────────────────────┘
+                                          │
+                          score · per-clause evidence · audit trail
 ```
 
-### 🔧 Setup & Installation
+**Retrieval-augmented chat** runs over the same ingested documents: query → local embeddings →
+cosine search over a metadata-rich vector store → answer grounded in retrieved clauses, with
+citations attached.
 
+## Tech stack & decisions
+
+- **Backend — FastAPI (Python).** Thin routes over a small set of focused utilities (ingest,
+  chunk, embeddings, vector store, the compliance engine, license resolver).
+- **Reasoning — Upstage Solar (`solar-pro3`)** via the OpenAI-compatible SDK. One provider key
+  powers both parsing/OCR and all LLM reasoning.
+- **Document parsing/OCR — Upstage Document Digitization.** Structured elements carry page and
+  section, so chunks preserve `{filename, page, section, clause_id}` — which is what makes
+  citations exact.
+- **Embeddings — local & free.** `sentence-transformers` when available, with an automatic
+  **deterministic-hashing fallback** so the app runs anywhere with zero heavy dependencies.
+- **Vector store — in-process numpy cosine** over normalized vectors (FAISS's role, zero install
+  risk), persisted to disk.
+- **Frontend — Next.js 15 + Tailwind + framer-motion.** A unified workspace (Overview,
+  Compliance, Licenses, Assistant) plus a marketing landing whose hero is the *live clause-audit
+  ledger* — the product, animating.
+- **No Redis** — caches are in-memory by design for a self-contained demo.
+
+```
+backend/
+  routes/      upload · chat · query · compliance · trending · slack · policy
+  utils/
+    ingest.py        file-type dispatch (PDF/PNG/JPG/DOCX/TXT/package.json/requirements.txt)
+    upstage.py       Document Parse + OCR
+    chunk.py         metadata-rich chunking (section / clause)
+    embeddings.py    sentence-transformers + hashing fallback
+    vector_store.py  numpy cosine store
+    llm_client.py    Upstage Solar wrapper (complete / JSON / stream)
+    compliance.py    the agentic loop
+    licenses.py      npm / PyPI resolution + SPDX compatibility
+    citations.py     citation builder
+frontend/
+  app/page.tsx           landing (animated clause-ledger hero)
+  app/app/               unified workspace: overview · compliance · licenses · assistant
+  components/clause-ledger.tsx   the signature component, reused live in both
+```
+
+## Run it locally
+
+**Backend**
 ```bash
-# Clone the repository
-git clone https://github.com/M-Abdelhakem/the-nomads.git
-
-# Move to the frontend directory and run
-cd frontend
-npm install
-npm run dev
-
-# Move to the backend directory and run
 cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt          # add -r requirements-ml.txt for ML embeddings
+cp .env.example .env                      # set UPSTAGE_API_KEY
+uvicorn main:app --reload --port 8001     # http://localhost:8001/docs
 ```
 
-### 📁 Dataset & References
-- **Dataset used**: We generated mock data to simulate some of the usecases we tackled
-- **References / Resources**:  
-[Internal Policy](https://docs.google.com/document/d/1XjfkSbxQ71sWHhwZoj0pSUSvL26ohWWMSRlrKMtejeE/edit?usp=sharing)  
-[Contract 1](https://docs.google.com/document/d/15c5c4Q74BrJIYqFnrnuER_DL_DUXL1kRM2-6qZOUvFk/edit?usp=sharing)  
-[Contract 2](https://docs.google.com/document/d/1YufhygMcE5dVumpEL7naMiaBGG6DSTW3HV1vMPWIKKs/edit?usp=sharing)  
+**Frontend**
+```bash
+cd frontend
+npm install --legacy-peer-deps
+cp .env.local.example .env.local
+npm run dev                               # http://localhost:3001
+```
 
-### 🙌 Team Members
+Open **`/`** for the landing and **`/app`** for the workspace. Sample policy / contract /
+manifest files live in [`samples/`](samples/).
 
-| Name        | Role               | GitHub                             |
-|-------------|--------------------|------------------------------------|
-| Mohanad Abdelhakem     | Full-Stack Developer | [@M-Abdelhakem](https://github.com/M-Abdelhakem) |
-| Madiyar Zhunussov  | Full-Stack Developer  | [@madiyarzm](https://github.com/madiyarzm) |
+## Deploy
 
-### ⏰ Development Period
-- Last updated: 2025-04-13
+- **Frontend → Vercel.** Import the repo, set **Root Directory = `frontend`**, and set
+  `NEXT_PUBLIC_API_URL` to your backend's public URL.
+- **Backend → Railway / Render / Fly.** Root `backend/`, start command
+  `uvicorn main:app --host 0.0.0.0 --port $PORT` (a `Procfile` is included). Set `UPSTAGE_API_KEY`
+  and `CORS_ORIGINS=https://<your-vercel-domain>`.
 
-### 📄 License
-This project is licensed under the [MIT license](https://opensource.org/licenses/MIT).  
-See the LICENSE file for more details.
+The landing page is fully static and looks great on its own; the interactive features light up
+once the backend URL is wired in.
+
+## Env vars
+
+| Service | Variable | Notes |
+|---|---|---|
+| Backend | `UPSTAGE_API_KEY` | Parsing/OCR **and** reasoning. $10 free credits at console.upstage.ai |
+| Backend | `CORS_ORIGINS` | Comma-separated; add your deployed frontend origin |
+| Backend | `UPSTAGE_MODEL` | optional, default `solar-pro3` |
+| Frontend | `NEXT_PUBLIC_API_URL` | Backend base URL (prod) |
+
+## Notes & limitations
+
+- Trending FAQs and the vector store are in-memory / single-process — perfect for a demo, swap
+  for Redis + a managed vector DB for production.
+- The agentic loop makes several sequential LLM calls, so an audit takes ~30–60s.
+
+## License
+
+MIT.
