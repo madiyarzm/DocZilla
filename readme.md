@@ -8,7 +8,7 @@
 every clause against it, flags what fails, drafts the rewrite, and re-checks until it passes.
 Every answer cites its exact source.
 
-[**Live demo →**](https://your-deployment.vercel.app) &nbsp;·&nbsp; Built with FastAPI · Next.js · Upstage Solar
+[**Live demo →**](https://doczilla-five.vercel.app) &nbsp;·&nbsp; Built with FastAPI · Next.js · Upstage Solar
 
 </div>
 
@@ -116,6 +116,13 @@ Open **`/`** for the landing and **`/app`** for the workspace. Sample policy / c
 manifest files live in [`samples/`](samples/).
 
 ## Deploy
+
+This project is **live in production**:
+
+- **Frontend** → Vercel: <https://doczilla-five.vercel.app>
+- **Backend** → Railway: <https://doczilla-api-production.up.railway.app> (`/health`, `/docs`)
+
+To deploy your own:
 
 - **Frontend → Vercel.** Import the repo, set **Root Directory = `frontend`**, and set
   `NEXT_PUBLIC_API_URL` to your backend's public URL.
